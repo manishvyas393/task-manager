@@ -1,0 +1,35 @@
+const request = require("supertest")
+const Tasks = require("../src/models/tasks")
+const app = require("../src/app")
+const User = require("../src/models/user")
+const { user, userId, setupDb, taskThree } = require("./fixtures/db")
+beforeEach(setupDb)
+jest.setTimeout(30000);
+test('should create task for user', async () => {
+      const res = await request(app)
+            .post("/tasks")
+            .set('Authorization', `Bearer ${user.tokens[0].token}`)
+            .send({
+                  description: "From My test"
+            })
+            .expect(201)
+      const task = await Tasks.findById(res.body._id)
+      expect(task.completed).toBe(false)
+})
+test("should get tasks of logged user", async () => {
+      const res = await request(app)
+            .get("/tasks")
+            .set('Authorization', `Bearer ${user.tokens[0].token}`)
+            .send()
+            .expect(200)
+      expect(res.body.length).toEqual(2)
+})
+test("should not delete other users tasks", async () => {
+      const res = await request(app)
+            .delete(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${user.tokens[0].token}`)
+            .send()
+            .expect(404)
+      const task = await Tasks.findById(taskThree._id)
+      expect(task).not.toBeNull()
+})

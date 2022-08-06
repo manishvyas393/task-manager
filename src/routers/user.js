@@ -26,7 +26,6 @@ router.post("/users", async (req, res) => {
                   token
             })
       } catch (error) {
-            console.log(error)
             res.status(400).send(error)
       }
 })
@@ -40,8 +39,7 @@ router.post("/users/login", async (req, res) => {
                   token
             })
       } catch (error) {
-            console.log(error)
-            res.status(500).json(error)
+            res.status(400).json(error)
       }
 })
 router.post("/users/logout", auth, async (req, res) => {
@@ -49,7 +47,6 @@ router.post("/users/logout", auth, async (req, res) => {
             req.user.tokens = req.user.tokens.filter((token) => {
                   return token.token != req.token
             })
-            console.log(await req.user.save())
             await req.user.save()
             res.send()
       } catch (error) {
@@ -93,7 +90,6 @@ router.delete("/users/me", auth, async (req, res) => {
       }
 })
 router.post("/users/avatar/me", auth, upload.single("avatar"), async (req, res) => {
-      console.log(req.file.buffer)
       const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
       req.user.avatar = buffer
       await req.user.save()
